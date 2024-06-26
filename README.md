@@ -27,7 +27,7 @@ faradawn_private_key.json
 
 # launch the app on port 8001
 tmux
-uvicorn main:app --host 0.0.0.0 --port 8001
+uvicorn app.main:app --host 0.0.0.0 --port 8001
 
 # on another terminal
 curl http://127.0.0.1:8001
@@ -66,3 +66,19 @@ class PageLoadRequest(BaseModel):
     course_id: int
 ```
 
+- If firewall issue and can't access the API
+```
+# First check
+sudo ufw status
+
+# Second check
+sudo systemctl status firewalld
+sudo firewall-cmd --list-all
+sudo firewall-cmd --permanent --add-port=8001/tcp
+sudo firewall-cmd --reload
+```
+
+- How to invoke a script
+```
+python -m app.scripts.firebase_delete_all_users
+```

@@ -3,46 +3,13 @@
 
 ## Login Screen
 ```
-POST /login {
-  username: "Faradawn",
-  password: "12345678"
-}
-
-Response {
-  status: "success",
-  uid: "xyz123"
-}
-
-POST /create_user {
-  username: "Faradawn",
-  password: "12345678"
-}
-
-Response {
-  status: "success",
-  uid: "xyz123"
-}
-
-or {
-  status: "already created",
-  uid: "none",
-}
-
-POST /delete_account {
-  uid: "xxx"
-}
-
-Response {
-  status: "success" or "failed: user not found"
-}
-
 curl -X POST "http://129.114.24.200:8001/create_user" \
      -H "Content-Type: application/json" \
-     -d '{"username": "OG", "password": "12345678"}'
+     -d '{"username": "Fara", "password": "1234"}'
 
 curl -X POST "http://129.114.24.200:8001/login" \
      -H "Content-Type: application/json" \
-     -d '{"username": "Faradawn", "password": "12345678"}'
+     -d '{"username": "Fara", "password": "1234"}'
 
 curl -X POST "http://129.114.24.200:8001/delete_account" \
      -H "Content-Type: application/json" \
@@ -52,29 +19,10 @@ curl -X POST "http://129.114.24.200:8001/delete_account" \
 
 ## Course Screen
 ```
-POST /courses {
-  uid: 100
-}
-
-Response [
-  {
-    course_id: 101,
-    course_name: "Software Engineering",
-  },
-  {
-    course_id: 102,
-    course_name: "Data Science",
-  }
-]
-
 curl -X POST "http://129.114.24.200:8001/courses" \
      -H "Content-Type: application/json" \
      -d '{"uid": 100}'
 ```
-
-### Course - retrieve that garden 
-
-## Garden screen
 
 ### 01 - Get Garden
 ```
@@ -113,13 +61,9 @@ Response {
 }
 
 
-curl -X POST "http://129.114.24.200:8001/garden/page_load" \
+curl -X POST "http://129.114.24.200:8001/get_garden" \
      -H "Content-Type: application/json" \
-     -d '{"uid": "100", "course_id": "101"}'
-
-curl -X POST "http://129.114.24.200:8001/garden/page_load" \
-     -H "Content-Type: application/json" \
-     -d '{"uid": "Faradawn_2_a19480c7-d365-415b-a50d-bc71de51776c", "course_id": "101"}'
+     -d '{"uid": "Fara_fd7bc457-2ca9-47fd-8825-7bea04b0d313", "course_id": "Software_Engineer_53fc0699-7eb2-4e66-bdd9-e1fa51aa4c3c"}'
 ```
 
 ### New garden
@@ -229,3 +173,6 @@ curl -X POST "http://129.114.24.200:8001/select_neighbor" \
      -H "Content-Type: application/json" \
      -d '{"uid": 100, "course_id": 101}'
 ```
+
+### Notes
+- Even if the collection is deleted, can still get collection adn add document 
