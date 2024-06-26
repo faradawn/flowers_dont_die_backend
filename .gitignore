@@ -1,0 +1,11 @@
+
+# macOS
+.DS_Store
+
+# backend
+env
+venv
+*private_key*
+*secret_key*
+*secret-key*
+__pycache__
