@@ -2,13 +2,12 @@ import uuid
 
 questions_data = [
     {
-        'question_id': str(uuid.uuid4()),
-        'course_id': '101',
+        'course_id': 'Software_Engineer_53fc0699-7eb2-4e66-bdd9-e1fa51aa4c3c',
         'topic': 'Array',
         'difficulty': 'easy',
         'answer': 'A',
         'question': 'Merge two strings by alternating characters. Append remaining characters of the longer string.',
-        'question_number': '1768',
+        'question_number': 'Leetcode 1768',
         'options': [
             'Two pointers. Iterate alternatively.',
             'Convert strings to lists, concatenate, convert back.',
@@ -17,7 +16,6 @@ questions_data = [
         ]
     },
     {
-        'question_id': str(uuid.uuid4()),
         'course_id': '101',
         'topic': 'Array',
         'difficulty': 'medium',
@@ -32,7 +30,6 @@ questions_data = [
         ]
     },
     {
-        'question_id': str(uuid.uuid4()),
         'course_id': '101',
         'topic': 'Array',
         'difficulty': 'hard',

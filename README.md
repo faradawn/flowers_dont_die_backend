@@ -80,5 +80,6 @@ sudo firewall-cmd --reload
 
 - How to invoke a script
 ```
+# add the project root
 python -m app.scripts.firebase_delete_all_users
 ```

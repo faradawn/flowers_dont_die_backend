@@ -19,6 +19,9 @@ class ResponseModel(BaseModel):
     message: str
     uid: str = ""
 
+class UID(BaseModel):
+    uid: str
+
 @router.post("/create_user", response_model=ResponseModel)
 async def create_user(user: User):
     users_ref = db.collection('users')
@@ -56,7 +59,8 @@ async def login(userlog: UserLogin):
     return ResponseModel(status="failed", message="Invalid username or password")
 
 @router.post("/delete_account", response_model=ResponseModel)
-async def delete_account(uid: str):
+async def delete_account(uid_request: UID):
+    uid = uid_request.uid
     try:
         users_ref = db.collection('users')
         gardens_ref = db.collection('gardens')
