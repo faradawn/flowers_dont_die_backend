@@ -166,9 +166,9 @@ async def submit_answer(request: SubmitAnswerRequest):
         for row in garden_data.get('garden_rows', []):
             if row['topic'] == question_topic:
                 target_row = row
-                if request.question_id not in target_row['questions_done']:
-                    target_row['questions_done'].append(request.question_id)
-                    gardens_ref.document(garden_doc.id).set(garden_data)
+                # if request.question_id not in target_row['questions_done']:
+                target_row['questions_done'].append(request.question_id)
+                gardens_ref.document(garden_doc.id).set(garden_data)
                 break
 
         if target_row is not None:
