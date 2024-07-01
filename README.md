@@ -84,9 +84,13 @@ sudo firewall-cmd --reload
 python -m app.scripts.firebase_delete_all_users
 ```
 
-- Use Claude API
+- How to use Claude API
 ```
 pip install anthropic
 pip install python-dotenv
-Then put API Key in app/.env
+
+# Then put API Key in app/.env
+
+cd app/scripts
+python3 calude_ai.py
 ```
