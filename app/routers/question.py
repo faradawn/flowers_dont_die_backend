@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List, Optional
 from app.firebase import db
 import random
-from scripts.claude_ai import get_claude_response
+from app.scripts.claude_ai import get_claude_response
 import logging
+import os
 
 
 
@@ -197,6 +198,7 @@ class QRequest(BaseModel):
 class QRes(BaseModel):
     res: str
 
+# Faradawn: This is placeholder
 @router.post("/get_top_vote", response_model=QRes)
 async def submit_answer(request: QRequest):
     return QRes(res="Answer 1: The main idea is the same with problem Linked List Cycle II,https://leetcode.com/problems/linked-list-cycle-ii/. Use two pointers the fast and the slow. The fast one goes forward two steps each time, while the slow one goes only step each time. They must meet the same item when slow==fast. In fact, they meet in a circle, the duplicate number must be the entry point of the circle when visiting the array from nums[0]. Next we just need to find the entry point. We use a point(we can use the fast one before) to visit form begining with one step each time, do the same job to slow. When fast==slow, they meet at the entry point of the circle. The easy understood code is as follows. ")
@@ -204,6 +206,7 @@ async def submit_answer(request: QRequest):
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
 class SubmitTextResponseRequest(BaseModel):
     uid: str
     question_id: str
@@ -215,6 +218,7 @@ class SubmitTextResponseResponse(BaseModel):
     grade: str
     feedback: str
 
+# Alexa
 @router.post("/submit_text_response", response_model=SubmitTextResponseResponse)
 async def submit_text_response(request: SubmitTextResponseRequest):
     logging.info(f"Received request: {request}")
@@ -245,3 +249,45 @@ async def submit_text_response(request: SubmitTextResponseRequest):
     except Exception as e:
         logging.error(f"An error occurred while processing the request: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    
+
+# Faradawn: Create /submit_audio_response, receive {uid, question_id, question, user_audio}, return a status of success or fail
+class SubmitAudioResponseResponse(BaseModel):
+    status: str
+    grade: int
+    feedback: str
+
+
+@router.post("/submit_audio_response", response_model=SubmitAudioResponseResponse)
+async def submit_audio_response(
+    uid: str = Form(...),
+    question_id: str = Form(...),
+    question: str = Form(...),
+    audio_file: UploadFile = File(...)
+):
+    logging.info(f"Received audio response request for user {uid}, question {question_id}")
+    try:
+        # Create a directory to store audio files if it doesn't exist
+        os.makedirs("audio_submissions", exist_ok=True)
+        
+        # Save the uploaded audio file
+        file_location = f"audio_submissions/{uid}_{question_id}.m4a"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(audio_file.file.read())
+        
+        # Fixed grade and feedback
+        grade = 3
+        feedback = "Perfect! This is the right solution!"
+        
+        return SubmitAudioResponseResponse(
+            status="success",
+            grade=grade,
+            feedback=feedback
+        )
+    except Exception as e:
+        logging.error(f"An error occurred while processing the audio response: {str(e)}")
+        return SubmitAudioResponseResponse(
+            status="failed",
+            grade=0,
+            feedback="An error occurred while processing your submission."
+        )

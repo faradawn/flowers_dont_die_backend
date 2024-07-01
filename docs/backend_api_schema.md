@@ -131,6 +131,16 @@ curl -X POST "http://129.114.24.200:8001/garden/submit_answer" \
      -d '{"uid": "100", "neighbor_uid": "Faradawn_2_a19480c7-d365-415b-a50d-bc71de51776c", "course_id": "101", "question_id": "SxGy1eypKa7Wq31BXuPd", "response_time": 10, "user_answer": "B", "correct_answer": "B"}'
 ```
 
+### Submit audio response 
+```
+curl -X POST "http://129.114.24.200:8001/submit_audio_response" \
+  -H "Content-Type: multipart/form-data" \
+  -F "uid=user123" \
+  -F "question_id=q001" \
+  -F "question=Describe the water cycle" \
+  -F "audio_file=@dp_audio.m4a"
+```
+
 ### 04 - Create Garden
 ```
 POST /garden/create_garden {
@@ -174,5 +184,8 @@ curl -X POST "http://129.114.24.200:8001/select_neighbor" \
      -d '{"uid": 100, "course_id": 101}'
 ```
 
+
+
 ### Notes
 - Even if the collection is deleted, can still get collection adn add document 
+

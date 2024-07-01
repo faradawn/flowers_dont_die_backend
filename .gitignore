@@ -10,3 +10,4 @@ venv
 *secret-key*
 __pycache__
 .env
+audio_submissions
