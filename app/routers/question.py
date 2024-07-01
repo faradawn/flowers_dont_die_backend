@@ -3,6 +3,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 from app.firebase import db
 import random
+from scripts.claude_ai import get_claude_response
+import logging
+
+
 
 router = APIRouter()
 
@@ -196,3 +200,48 @@ class QRes(BaseModel):
 @router.post("/get_top_vote", response_model=QRes)
 async def submit_answer(request: QRequest):
     return QRes(res="Answer 1: The main idea is the same with problem Linked List Cycle II,https://leetcode.com/problems/linked-list-cycle-ii/. Use two pointers the fast and the slow. The fast one goes forward two steps each time, while the slow one goes only step each time. They must meet the same item when slow==fast. In fact, they meet in a circle, the duplicate number must be the entry point of the circle when visiting the array from nums[0]. Next we just need to find the entry point. We use a point(we can use the fast one before) to visit form begining with one step each time, do the same job to slow. When fast==slow, they meet at the entry point of the circle. The easy understood code is as follows. ")
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+class SubmitTextResponseRequest(BaseModel):
+    uid: str
+    question_id: str
+    question: str
+    user_text: str
+
+class SubmitTextResponseResponse(BaseModel):
+    status: str
+    grade: str
+    feedback: str
+
+@router.post("/submit_text_response", response_model=SubmitTextResponseResponse)
+async def submit_text_response(request: SubmitTextResponseRequest):
+    logging.info(f"Received request: {request}")
+    
+    try:
+        question_text = request.question
+        user_text = request.user_text
+
+        grade, feedback = get_claude_response(question_text, user_text)
+        logging.info(f"Claude API response - grade: {grade}, feedback: {feedback}")
+
+        submissions_ref = db.collection('submissions')
+        submissions_ref.add({
+            'uid': request.uid,
+            'question_id': request.question_id,
+            'question': question_text,
+            'user_text': user_text,
+            'grade': grade,
+            'feedback': feedback
+        })
+
+        return SubmitTextResponseResponse(
+            status="success",
+            grade=grade,
+            feedback=feedback
+        )
+
+    except Exception as e:
+        logging.error(f"An error occurred while processing the request: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
