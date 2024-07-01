@@ -9,3 +9,4 @@ venv
 *secret_key*
 *secret-key*
 __pycache__
+.env

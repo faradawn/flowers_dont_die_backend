@@ -83,3 +83,10 @@ sudo firewall-cmd --reload
 # add the project root
 python -m app.scripts.firebase_delete_all_users
 ```
+
+- Use Claude API
+```
+pip install anthropic
+pip install python-dotenv
+Then put API Key in app/.env
+```
