@@ -1,3 +1,5 @@
+import asyncio
+import aiohttp
 import os
 from dotenv import load_dotenv
 import requests
@@ -11,42 +13,39 @@ load_dotenv()
 API_KEY = os.getenv("BAIDU_API_KEY")
 SECRET_KEY = os.getenv("BAIDU_SECRET_KEY")
 
-def get_access_token():
+async def get_access_token():
     url = "https://aip.baidubce.com/oauth/2.0/token"
     params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
-    return str(requests.post(url, params=params).json().get("access_token"))
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, params=params) as response:
+            data = await response.json()
+            return str(data.get("access_token"))
 
-def create_task(audio_file_name):
-    url = "https://aip.baidubce.com/rpc/2.0/aasr/v1/create?access_token=" + get_access_token()
-    payload = json.dumps({
+async def create_task(audio_file_name):
+    url = "https://aip.baidubce.com/rpc/2.0/aasr/v1/create?access_token=" + await get_access_token()
+    payload = {
         "speech_url": f"http://129.114.24.200:8001/audio/{audio_file_name}",
         "format": "m4a",
         "pid": 1737,
         "rate": 16000
-    })
-    headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    response_json = response.json()
-    return response_json.get("task_id")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as response:
+            response_json = await response.json()
+            return response_json.get("task_id")
 
-def get_res(task_id):
-    url = "https://aip.baidubce.com/rpc/2.0/aasr/v1/query?access_token=" + get_access_token()
-    payload = json.dumps({
+async def get_res(task_id):
+    url = "https://aip.baidubce.com/rpc/2.0/aasr/v1/query?access_token=" + await get_access_token()
+    payload = {
         "task_ids": [task_id]
-    })
-    headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    return response.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as response:
+            return await response.json()
 
-def check_task_status(task_id, max_attempts=10, delay=1):
+async def check_task_status(task_id, max_attempts=10, delay=1):
     for attempt in range(max_attempts):
-        response = get_res(task_id)
+        response = await get_res(task_id)
         print(f"Attempt {attempt + 1}: Checking task status...")
         if response.get("tasks_info"):
             task_status = response["tasks_info"][0]["task_status"]
@@ -56,18 +55,17 @@ def check_task_status(task_id, max_attempts=10, delay=1):
             elif task_status == "Failed":
                 print("Task failed.")
                 return None
-        time.sleep(delay)
+        await asyncio.sleep(delay)
     print("Max attempts reached. Task not completed.")
     return None
 
 async def convert_audio_to_text(file_path):
-    # Extract just the filename from the full path
     audio_file_name = os.path.basename(file_path)
     
-    task_id = create_task(audio_file_name)
+    task_id = await create_task(audio_file_name)
     if task_id:
         print(f"Task created with ID: {task_id}")
-        result = check_task_status(task_id)
+        result = await check_task_status(task_id)
         if result and "result" in result:
             return result["result"][0]
         else:
@@ -76,16 +74,3 @@ async def convert_audio_to_text(file_path):
     else:
         print("Failed to create task.")
         return None
-
-# If you need to test the function independently:
-if __name__ == '__main__':
-    import asyncio
-    
-    async def test():
-        text = await convert_audio_to_text("path/to/your/audio/file.m4a")
-        if text:
-            print("Converted text:", text)
-        else:
-            print("Conversion failed.")
-
-    asyncio.run(test())

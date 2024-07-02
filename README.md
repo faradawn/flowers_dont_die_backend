@@ -94,3 +94,8 @@ pip install python-dotenv
 cd app/scripts
 python3 calude_ai.py
 ```
+
+### Baidu AI
+```
+pip install aiohttp
+```

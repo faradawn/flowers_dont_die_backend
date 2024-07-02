@@ -274,24 +274,27 @@ async def submit_audio_response(
     logging.info(f"Received audio response request for user {uid}, question {question_id}")
     try:
         # 1. Create a directory to store audio files if it doesn't exist
-        os.makedirs("audio_submissions", exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
-        with open(file_location, "wb+") as file_object:
-            file_object.write(audio_file.file.read())
+        # os.makedirs("audio_submissions", exist_ok=True)
+        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
+        # with open(file_location, "wb+") as file_object:
+        #     file_object.write(audio_file.file.read())
 
-        # 2. Call baidu_tts.py to get the text
-        text_response = await convert_audio_to_text(file_location)
-        if not text_response:
-            raise HTTPException(status_code=500, detail="Failed to convert audio to text")
+        # # 2. Call baidu_tts.py to get the text
+        # text_response = await convert_audio_to_text(file_location)
+        # if not text_response:
+        #     raise HTTPException(status_code=500, detail="Failed to convert audio to text")
 
-        # 3. Call claude_ai.py to get grade and feedback
-        claude_response = await get_claude_response(question, text_response)
-        if not claude_response or 'grade' not in claude_response:
-            raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
+        # # 3. Call claude_ai.py to get grade and feedback
+        # claude_response = await get_claude_response(question, text_response)
+        # if not claude_response or 'grade' not in claude_response:
+        #     raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
 
-        grade = claude_response['grade']
-        feedback_body = claude_response['feedback']
+        # grade = claude_response['grade']
+        # feedback_body = claude_response['feedback']
+
+        grade = 3
+        feedback_body = 'The solution uses DP which is correct'
 
         # 4. Produce a response
         if grade == 3:
