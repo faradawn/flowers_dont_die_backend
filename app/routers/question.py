@@ -1,11 +1,14 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from app.firebase import db
 import random
+from app.scripts.baidu_tts import convert_audio_to_text
 from app.scripts.claude_ai import get_claude_response
 import logging
 import os
+from datetime import datetime
 
 
 
@@ -251,12 +254,15 @@ async def submit_text_response(request: SubmitTextResponseRequest):
         raise HTTPException(status_code=500, detail="Internal server error")
     
 
-# Faradawn: Create /submit_audio_response, receive {uid, question_id, question, user_audio}, return a status of success or fail
+# Faradawn: Create /submit_audio_response, receive {uid, question_id, question, audio_file}
+# Then, call scripts/baidu_tts.py to convert the audio to text
+# Finall, call scripts/claude_ai.py to get grade and feedback
+# if grade is 3, feedback_title = Perfect!. If grade = 2, title = Almost optimal!. If grade = 1, Ah, take your time.
 class SubmitAudioResponseResponse(BaseModel):
     status: str
     grade: int
-    feedback: str
-
+    feedback_title: str
+    feedback_body: str
 
 @router.post("/submit_audio_response", response_model=SubmitAudioResponseResponse)
 async def submit_audio_response(
@@ -267,27 +273,59 @@ async def submit_audio_response(
 ):
     logging.info(f"Received audio response request for user {uid}, question {question_id}")
     try:
-        # Create a directory to store audio files if it doesn't exist
+        # 1. Create a directory to store audio files if it doesn't exist
         os.makedirs("audio_submissions", exist_ok=True)
-        
-        # Save the uploaded audio file
-        file_location = f"audio_submissions/{uid}_{question_id}.m4a"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
         with open(file_location, "wb+") as file_object:
             file_object.write(audio_file.file.read())
-        
-        # Fixed grade and feedback
-        grade = 3
-        feedback = "Perfect! This is the right solution!"
-        
+
+        # 2. Call baidu_tts.py to get the text
+        text_response = await convert_audio_to_text(file_location)
+        if not text_response:
+            raise HTTPException(status_code=500, detail="Failed to convert audio to text")
+
+        # 3. Call claude_ai.py to get grade and feedback
+        claude_response = await get_claude_response(question, text_response)
+        if not claude_response or 'grade' not in claude_response:
+            raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
+
+        grade = claude_response['grade']
+        feedback_body = claude_response['feedback']
+
+        # 4. Produce a response
+        if grade == 3:
+            feedback_title = "Perfect!"
+        elif grade == 2:
+            feedback_title = "Almost optimal!"
+        elif grade == 1:
+            feedback_title = "Ah, take your time."
+        else:
+            feedback_title = "Keep practicing!"
+
         return SubmitAudioResponseResponse(
             status="success",
             grade=grade,
-            feedback=feedback
+            feedback_title=feedback_title,
+            feedback_body=feedback_body
         )
+
     except Exception as e:
         logging.error(f"An error occurred while processing the audio response: {str(e)}")
         return SubmitAudioResponseResponse(
             status="failed",
             grade=0,
-            feedback="An error occurred while processing your submission."
+            feedback_title="Oops, an error",
+            feedback_body="An error occurred while processing your submission."
         )
+
+# expose the audio url for baidu text-to-speech to fetch
+@router.get("/audio/{filename}.m4a")
+async def get_m4a_audio(filename: str):
+    AUDIO_FOLDER = "audio_submissions"
+    file_path = os.path.join(AUDIO_FOLDER, f"{filename}.m4a")
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="M4A audio file not found")
+    
+    return FileResponse(file_path, media_type="audio/m4a", filename=f"{filename}.m4a")
