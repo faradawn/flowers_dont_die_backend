@@ -273,7 +273,7 @@ async def submit_audio_response(
 ):
     logging.info(f"Received audio response request for user {uid}, question {question_id}")
     try:
-        # 1. Create a directory to store audio files if it doesn't exist
+        # 1. Store the audio files
         # os.makedirs("audio_submissions", exist_ok=True)
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"

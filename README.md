@@ -99,3 +99,16 @@ python3 calude_ai.py
 ```
 pip install aiohttp
 ```
+
+### Insatll Whisper AI
+```
+# repo: https://github.com/openai/whisper
+sudo apt update && sudo apt install ffmpeg
+pip install git+https://github.com/openai/whisper.git 
+
+# medium model took 3 minutes. Also detects language
+whisper audio_submissions/user123_q001.m4a --model medium
+
+# tiny model took 13s. Use .en suffix to restrict to english
+whisper audio_submissions/user123_q001.m4a --model tiny.en
+```
