@@ -112,3 +112,15 @@ whisper audio_submissions/user123_q001.m4a --model medium
 # tiny model took 13s. Use .en suffix to restrict to english
 whisper audio_submissions/user123_q001.m4a --model tiny.en
 ```
+### iFlyTek AI
+```
+uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+curl -X 'POST' \
+  'http://127.0.0.1:8000/upload-audio/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@path/to/your/audiofile.mp3'
+
+  curl -X 'GET' 'http://127.0.0.1:8000/get-transcription/' -H 'accept: application/json'
+```
