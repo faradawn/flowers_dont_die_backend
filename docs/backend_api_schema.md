@@ -137,8 +137,8 @@ curl -X POST "http://129.114.24.200:8001/submit_audio_response" \
   -H "Content-Type: multipart/form-data" \
   -F "uid=user123" \
   -F "question_id=q001" \
-  -F "question=Describe the water cycle" \
-  -F "audio_file=@dp_audio.m4a"
+  -F "question=Given an array of integers heights representing the histogram's bar height where the width of each bar is 1, return the area of the largest rectangle in the histogram." \
+  -F "audio_file=@stack_audio.m4a"
 ```
 
 ### 04 - Create Garden

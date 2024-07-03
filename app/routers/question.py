@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from app.firebase import db
 import random
-from app.scripts.baidu_tts import convert_audio_to_text
 from app.scripts.claude_ai import get_claude_response
+from app.scripts.whisper_ai import whisper_transcribe
 import logging
 import os
 from datetime import datetime
@@ -263,7 +263,9 @@ class SubmitAudioResponseResponse(BaseModel):
     grade: int
     feedback_title: str
     feedback_body: str
+    text_from_audio: str
 
+# TODO: fetch question to get 
 @router.post("/submit_audio_response", response_model=SubmitAudioResponseResponse)
 async def submit_audio_response(
     uid: str = Form(...),
@@ -274,27 +276,28 @@ async def submit_audio_response(
     logging.info(f"Received audio response request for user {uid}, question {question_id}")
     try:
         # 1. Store the audio files
-        # os.makedirs("audio_submissions", exist_ok=True)
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
-        # with open(file_location, "wb+") as file_object:
-        #     file_object.write(audio_file.file.read())
+        os.makedirs("audio_submissions", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(audio_file.file.read())
 
-        # # 2. Call baidu_tts.py to get the text
-        # text_response = await convert_audio_to_text(file_location)
-        # if not text_response:
-        #     raise HTTPException(status_code=500, detail="Failed to convert audio to text")
+        # TODO: smaple user text
+        transcribed_text = """
+        Keep a monotonic stack with [(element, count), ...]. Loop through the array elements. Count means the how far is the current index to that element, which is running width of the rectangle of that height.
+        - Every time we see a smaller element, pop elements that are bigger than me, because they have no potential of incurring bigger rectangles.
+        - We add the count of the last element we pop from the stack. 
+        - Every time we see a new element, loop through the entire stack and increase the count of each element by 1.
+        """
 
+        # 2. Call baidu_tts.py to get the text
+        transcribed_text = whisper_transcribe(file_location)
+        print("Text transcription:", transcribed_text)
+        
         # # 3. Call claude_ai.py to get grade and feedback
-        # claude_response = await get_claude_response(question, text_response)
-        # if not claude_response or 'grade' not in claude_response:
-        #     raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
-
-        # grade = claude_response['grade']
-        # feedback_body = claude_response['feedback']
-
-        grade = 3
-        feedback_body = 'The solution uses DP which is correct'
+        grade, feedback_body = get_claude_response(question, transcribed_text)
+        if grade == -1:
+            raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
 
         # 4. Produce a response
         if grade == 3:
@@ -310,7 +313,8 @@ async def submit_audio_response(
             status="success",
             grade=grade,
             feedback_title=feedback_title,
-            feedback_body=feedback_body
+            feedback_body=feedback_body,
+            text_from_audio=transcribed_text
         )
 
     except Exception as e:
@@ -319,16 +323,7 @@ async def submit_audio_response(
             status="failed",
             grade=0,
             feedback_title="Oops, an error",
-            feedback_body="An error occurred while processing your submission."
+            feedback_body="An error occurred while processing your submission.",
+            text_from_audio=transcribed_text
         )
 
-# expose the audio url for baidu text-to-speech to fetch
-@router.get("/audio/{filename}.m4a")
-async def get_m4a_audio(filename: str):
-    AUDIO_FOLDER = "audio_submissions"
-    file_path = os.path.join(AUDIO_FOLDER, f"{filename}.m4a")
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="M4A audio file not found")
-    
-    return FileResponse(file_path, media_type="audio/m4a", filename=f"{filename}.m4a")

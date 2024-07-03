@@ -74,3 +74,15 @@ async def convert_audio_to_text(file_path):
     else:
         print("Failed to create task.")
         return None
+    
+
+# expose the audio url for baidu text-to-speech to fetch (add to questions.py)
+# @router.get("/audio/{filename}.m4a")
+# async def get_m4a_audio(filename: str):
+#     AUDIO_FOLDER = "audio_submissions"
+#     file_path = os.path.join(AUDIO_FOLDER, f"{filename}.m4a")
+    
+#     if not os.path.exists(file_path):
+#         raise HTTPException(status_code=404, detail="M4A audio file not found")
+    
+#     return FileResponse(file_path, media_type="audio/m4a", filename=f"{filename}.m4a")
