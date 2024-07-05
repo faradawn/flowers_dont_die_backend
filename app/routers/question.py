@@ -207,99 +207,74 @@ async def submit_answer(request: QRequest):
     return QRes(res="Answer 1: The main idea is the same with problem Linked List Cycle II,https://leetcode.com/problems/linked-list-cycle-ii/. Use two pointers the fast and the slow. The fast one goes forward two steps each time, while the slow one goes only step each time. They must meet the same item when slow==fast. In fact, they meet in a circle, the duplicate number must be the entry point of the circle when visiting the array from nums[0]. Next we just need to find the entry point. We use a point(we can use the fast one before) to visit form begining with one step each time, do the same job to slow. When fast==slow, they meet at the entry point of the circle. The easy understood code is as follows. ")
 
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 
-class SubmitTextResponseRequest(BaseModel):
-    uid: str
-    question_id: str
-    question: str
-    user_text: str
-
-class SubmitTextResponseResponse(BaseModel):
+# Faradawn: Transcribe using whisper AI
+class TranscribeAudioResponse(BaseModel):
     status: str
-    grade: str
-    feedback: str
+    message: str
+    transcribed_text: str 
 
-# Alexa
-@router.post("/submit_text_response", response_model=SubmitTextResponseResponse)
-async def submit_text_response(request: SubmitTextResponseRequest):
-    logging.info(f"Received request: {request}")
-    
-    try:
-        question_text = request.question
-        user_text = request.user_text
-
-        grade, feedback = get_claude_response(question_text, user_text)
-        logging.info(f"Claude API response - grade: {grade}, feedback: {feedback}")
-
-        submissions_ref = db.collection('submissions')
-        submissions_ref.add({
-            'uid': request.uid,
-            'question_id': request.question_id,
-            'question': question_text,
-            'user_text': user_text,
-            'grade': grade,
-            'feedback': feedback
-        })
-
-        return SubmitTextResponseResponse(
-            status="success",
-            grade=grade,
-            feedback=feedback
-        )
-
-    except Exception as e:
-        logging.error(f"An error occurred while processing the request: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-    
-
-# Faradawn: Create /submit_audio_response, receive {uid, question_id, question, audio_file}
-# Then, call scripts/baidu_tts.py to convert the audio to text
-# Finall, call scripts/claude_ai.py to get grade and feedback
-# if grade is 3, feedback_title = Perfect!. If grade = 2, title = Almost optimal!. If grade = 1, Ah, take your time.
-class SubmitAudioResponseResponse(BaseModel):
-    status: str
-    grade: int
-    feedback_title: str
-    feedback_body: str
-    text_from_audio: str
-
-# TODO: fetch question to get 
-@router.post("/submit_audio_response", response_model=SubmitAudioResponseResponse)
-async def submit_audio_response(
+@router.post("/transcribe", response_model=TranscribeAudioResponse)
+async def transcribe_audio(
     uid: str = Form(...),
     question_id: str = Form(...),
-    question: str = Form(...),
     audio_file: UploadFile = File(...)
 ):
-    logging.info(f"Received audio response request for user {uid}, question {question_id}")
+    logging.info(f"Received audio transcription request for user {uid}, question {question_id}")
     try:
-        # 1. Store the audio files
+        # Store the audio file
         os.makedirs("audio_submissions", exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
         with open(file_location, "wb+") as file_object:
             file_object.write(audio_file.file.read())
-
-        # TODO: smaple user text
-        transcribed_text = """
-        Keep a monotonic stack with [(element, count), ...]. Loop through the array elements. Count means the how far is the current index to that element, which is running width of the rectangle of that height.
-        - Every time we see a smaller element, pop elements that are bigger than me, because they have no potential of incurring bigger rectangles.
-        - We add the count of the last element we pop from the stack. 
-        - Every time we see a new element, loop through the entire stack and increase the count of each element by 1.
-        """
-
-        # 2. Call baidu_tts.py to get the text
-        transcribed_text = whisper_transcribe(file_location)
-        print("Text transcription:", transcribed_text)
         
-        # # 3. Call claude_ai.py to get grade and feedback
-        grade, feedback_body = get_claude_response(question, transcribed_text)
+        # Transcribe the audio
+        transcribed_text = whisper_transcribe(file_location)
+        
+        return TranscribeAudioResponse(
+            status="success",
+            message="Audio transcribed successfully",
+            transcribed_text=transcribed_text
+        )
+    except Exception as e:
+        logging.error(f"An error occurred while transcribing the audio: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to transcribe audio")
+
+
+
+# Faradawn: receive text and upload to claude 
+# if grade is 3, feedback_title = Perfect!. If grade = 2, title = Almost optimal!. If grade = 1, Ah, take your time.
+class SubmitTextResponseRequest(BaseModel):
+    uid: str
+    question_id: str
+    question: str
+    transcribed_text: str
+
+class SubmitTextResponseResponse(BaseModel):
+    status: str
+    grade: int
+    feedback_title: str
+    feedback_body: str
+
+@router.post("/submit_text_response", response_model=SubmitTextResponseResponse)
+async def submit_text_response(request: SubmitTextResponseRequest):
+    logging.info(f"Received text response submission for user {request.uid}, question {request.question_id}")
+    if request.transcribed_text is None or request.transcribed_text == "":
+        return SubmitTextResponseResponse(
+            status="success",
+            grade=0,
+            feedback_title="Sorry",
+            feedback_body="Nothing was submitted."
+        )
+    try:
+        # Call Claude AI to get grade and feedback
+        grade, feedback_body = get_claude_response(request.question, request.transcribed_text)
+        
         if grade == -1:
             raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
-
-        # 4. Produce a response
+        
+        # Determine feedback title
         if grade == 3:
             feedback_title = "Perfect!"
         elif grade == 2:
@@ -308,22 +283,13 @@ async def submit_audio_response(
             feedback_title = "Ah, take your time."
         else:
             feedback_title = "Keep practicing!"
-
-        return SubmitAudioResponseResponse(
+        
+        return SubmitTextResponseResponse(
             status="success",
             grade=grade,
             feedback_title=feedback_title,
-            feedback_body=feedback_body,
-            text_from_audio=transcribed_text
+            feedback_body=feedback_body
         )
-
     except Exception as e:
-        logging.error(f"An error occurred while processing the audio response: {str(e)}")
-        return SubmitAudioResponseResponse(
-            status="failed",
-            grade=0,
-            feedback_title="Oops, an error",
-            feedback_body="An error occurred while processing your submission.",
-            text_from_audio=transcribed_text
-        )
-
+        logging.error(f"An error occurred while processing the text response: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to process text response")
