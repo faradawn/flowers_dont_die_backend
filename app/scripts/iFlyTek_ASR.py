@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
-from pydantic import BaseModel, RootModel
+from fastapi import APIRouter, HTTPException, File, UploadFile
+from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, firestore
 import uuid
@@ -22,7 +22,8 @@ import websocket
 from wsgiref.handlers import format_date_time
 from pydub import AudioSegment
 
-app = FastAPI()
+router = APIRouter()
+
 STATUS_FIRST_FRAME = 0  # The identity of the first frame
 STATUS_CONTINUE_FRAME = 1  # Intermediate frame identification
 STATUS_LAST_FRAME = 2  # The identity of the last frame
@@ -114,7 +115,7 @@ def on_open(ws, wsParam):
 
     threading.Thread(target=run).start()
 
-@app.post("/upload-audio/")
+@router.post("/upload-audio/")
 async def upload_audio(file: UploadFile = File(...)):
     global transcription_result
     transcription_result = []
@@ -128,7 +129,6 @@ async def upload_audio(file: UploadFile = File(...)):
         audio = audio.set_frame_rate(16000).set_channels(1)
         audio.export(wav_file_location, format="wav")
 
-        # Here using personal account api info
         APPID = "ga401c82"
         API_KEY = "faee560d6949cb096f31c7d62bf78fe3"
         API_SECRET = "773bfcdf533aec7e74d70d325fb7fe14"
@@ -143,11 +143,7 @@ async def upload_audio(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while uploading the file: {str(e)}")
 
-@app.get("/get-transcription/")
+@router.get("/get-transcription/")
 async def get_transcription():
     global transcription_result
     return {"transcription": " ".join(transcription_result)}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
