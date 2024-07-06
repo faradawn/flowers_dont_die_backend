@@ -225,7 +225,7 @@ async def transcribe_audio(
         # Store the audio file
         os.makedirs("audio_submissions", exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_location = f"audio_submissions/{timestamp}_{uid}_{question_id}.m4a"
+        file_location = f"audio_submissions/{uid}_{question_id}.m4a"
         with open(file_location, "wb+") as file_object:
             file_object.write(audio_file.file.read())
         

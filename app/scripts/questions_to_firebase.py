@@ -35,14 +35,14 @@ def get_questions():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Hard code the file name
-    file_name = 'question_sheet.csv'
     
     # Construct the absolute path to the CSV file
-    absolute_path = os.path.join(script_dir, file_name)
+    # absolute_path = os.path.join(script_dir, file_name)
     
+    file_name = 'app/scripts/claude_question_list.csv'
     questions_data = []
     
-    with open(absolute_path, mode='r') as file:
+    with open(file_name, mode='r') as file:
         csv_reader = csv.DictReader(file)
         
         for row in csv_reader:
@@ -52,11 +52,11 @@ def get_questions():
                 'difficulty': row['difficulty'],
                 'answer': 'A',  # Assuming the correct solution is always 'A'
                 'question': row['question'],
-                'question_number': row['question_number'].split('.', 1)[0],
+                'question_number': 'Leetcode ' + row['question_number'],
                 'options': [
-                    row['Correct Solution'],
-                    row['Incorrect 1'],
-                    row.get('Incorrect 2', ''),  # Handle missing incorrect solutions
+                    row['correct_approach'],
+                    row['incorrect_approach_1'],
+                    row.get('incorrect_approach_2', ''),
                 ],
                 'time_limit': 60
             }
@@ -78,6 +78,4 @@ def add_questions(course_id):
 if __name__ == '__main__':
     course_id = get_course_id()
     print("Got course_id", course_id)
-    # delete_all_gardens()
-    delete_all_questions()
     add_questions(course_id)
