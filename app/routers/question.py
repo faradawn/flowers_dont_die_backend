@@ -9,11 +9,12 @@ from app.scripts.whisper_ai import whisper_transcribe
 import logging
 import os
 from datetime import datetime
-import openai
+from openai import OpenAI
+
 import aiofiles
 from app.scripts.config import OPENAI_API_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-openai.api_key = OPENAI_API_KEY
 
 router = APIRouter()
 
@@ -38,16 +39,13 @@ class GetQuestionResponse(BaseModel):
     audio_url: str  # Field added
 
 async def generate_audio(text: str, filename: str):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=text,
-        max_tokens=100
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
     )
-    
-    audio_url = response['choices'][0]['text'].strip()
-    
-    async with aiofiles.open(filename, 'wb') as out_file:
-        await out_file.write(audio_url.encode('utf-8'))
+
+    response.stream_to_file(filename)
 
 
 @router.post("/get_question", response_model=GetQuestionResponse)
@@ -58,7 +56,7 @@ async def get_question(request: GetQuestionRequest):
         # If topic is None, get all questions for the course
         all_questions_query = questions_ref.where('course_id', '==', request.course_id).stream()
         all_questions = [doc for doc in all_questions_query if doc.exists]
-        
+
         if all_questions:
             # Select a random question among all questions
             question_doc = random.choice(all_questions)
@@ -85,7 +83,7 @@ async def get_question(request: GetQuestionRequest):
             .where('topic', '==', request.topic)\
             .stream()
         matching_questions = [doc for doc in question_query if doc.exists]
-        
+
         if matching_questions:
             question_doc = random.choice(matching_questions)
             question_data = question_doc.to_dict()
@@ -104,7 +102,7 @@ async def get_question(request: GetQuestionRequest):
                 time_limit=60,
                 audio_url=""
             )
-            
+
     audio_filename = f"audio_{question_data['question_id']}.mp3"
     await generate_audio(question_data['question'], audio_filename)
 
@@ -170,7 +168,7 @@ async def submit_answer(request: SubmitAnswerRequest):
                 status="failed",
                 message="Question not found"
             )
-        
+
         question_data = question_doc.to_dict()
         question_topic = question_data.get('topic')
 
@@ -251,10 +249,10 @@ async def transcribe_audio(
         file_location = f"audio_submissions/{uid}_{question_id}.m4a"
         with open(file_location, "wb+") as file_object:
             file_object.write(audio_file.file.read())
-        
+
         # Transcribe the audio
         transcribed_text = whisper_transcribe(file_location)
-        
+
         return TranscribeAudioResponse(
             status="success",
             message="Audio transcribed successfully",
@@ -293,10 +291,10 @@ async def submit_text_response(request: SubmitTextResponseRequest):
     try:
         # Call Claude AI to get grade and feedback
         grade, feedback_body = get_claude_response(request.question, request.transcribed_text)
-        
+
         if grade == -1:
             raise HTTPException(status_code=500, detail="Failed to get grade and feedback from Claude AI")
-        
+
         # Determine feedback title
         if grade == 3:
             feedback_title = "Perfect!"
@@ -306,7 +304,7 @@ async def submit_text_response(request: SubmitTextResponseRequest):
             feedback_title = "Ah, take your time."
         else:
             feedback_title = "Keep practicing!"
-        
+
         return SubmitTextResponseResponse(
             status="success",
             grade=grade,
