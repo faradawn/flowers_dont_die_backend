@@ -9,8 +9,11 @@ from app.scripts.whisper_ai import whisper_transcribe
 import logging
 import os
 from datetime import datetime
+import openai
+import aiofiles
+from scripts.config import OPENAI_API_KEY
 
-
+openai.api_key = OPENAI_API_KEY
 
 router = APIRouter()
 
@@ -32,6 +35,20 @@ class GetQuestionResponse(BaseModel):
     question_number: str
     options: List[str]
     time_limit: int
+    audio_url: str  # Field added
+
+async def generate_audio(text: str, filename: str):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=text,
+        max_tokens=100
+    )
+    
+    audio_url = response['choices'][0]['text'].strip()
+    
+    async with aiofiles.open(filename, 'wb') as out_file:
+        await out_file.write(audio_url.encode('utf-8'))
+
 
 @router.post("/get_question", response_model=GetQuestionResponse)
 async def get_question(request: GetQuestionRequest):
@@ -60,6 +77,7 @@ async def get_question(request: GetQuestionRequest):
                 question_number='Leetcode 0.',
                 options=['Sorry', 'Sorry', 'Sorry'],
                 time_limit=60
+                audio_url=""
             )
     else:
         # If topic is provided, proceed with the original logic
@@ -84,7 +102,11 @@ async def get_question(request: GetQuestionRequest):
                 question_number='Leetcode 0.',
                 options=['Sorry', 'Sorry', 'Sorry'],
                 time_limit=60
+                audio_url=""
             )
+            
+    audio_filename = f"audio_{question_data['question_id']}.mp3"
+    await generate_audio(question_data['question'], audio_filename)
 
     return GetQuestionResponse(
         status="success",
@@ -97,6 +119,7 @@ async def get_question(request: GetQuestionRequest):
         question_number=question_data['question_number'],
         options=question_data['options'],
         time_limit=question_data['time_limit']
+        audio_url=audio_filename
     )
 
 class SubmitAnswerRequest(BaseModel):
