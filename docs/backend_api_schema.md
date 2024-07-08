@@ -105,9 +105,9 @@ Response {
 }
 
 
-curl -X POST "http://0.0.0.0:8001/garden/get_question" \
+curl -X POST "http://0.0.0.0:8001/get_question" \
      -H "Content-Type: application/json" \
-     -d '{"my_uid": "100", "neighbor_uid": "Faradawn_2_a19480c7-d365-415b-a50d-bc71de51776c", "course_id": "101", "topic": "Array", "difficulty": "easy"}'
+     -d '{"uid": "100", "course_id": "Software_Engineer_53fc0699-7eb2-4e66-bdd9-e1fa51aa4c3c", "topic": "Binary Search", "difficulty": "Easy"}'
 ```
 
 ### 03 - When user submits an answer

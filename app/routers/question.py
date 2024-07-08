@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 import openai
 import aiofiles
-from scripts.config import OPENAI_API_KEY
+from app.scripts.config import OPENAI_API_KEY
 
 openai.api_key = OPENAI_API_KEY
 
@@ -76,7 +76,7 @@ async def get_question(request: GetQuestionRequest):
                 question="Sorry, more questions on their way!",
                 question_number='Leetcode 0.',
                 options=['Sorry', 'Sorry', 'Sorry'],
-                time_limit=60
+                time_limit=60,
                 audio_url=""
             )
     else:
@@ -101,7 +101,7 @@ async def get_question(request: GetQuestionRequest):
                 question="Sorry, more questions of this kind are on their way!",
                 question_number='Leetcode 0.',
                 options=['Sorry', 'Sorry', 'Sorry'],
-                time_limit=60
+                time_limit=60,
                 audio_url=""
             )
             
@@ -118,7 +118,7 @@ async def get_question(request: GetQuestionRequest):
         question=question_data['question'],
         question_number=question_data['question_number'],
         options=question_data['options'],
-        time_limit=question_data['time_limit']
+        time_limit=question_data['time_limit'],
         audio_url=audio_filename
     )
 

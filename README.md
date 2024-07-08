@@ -124,3 +124,9 @@ curl -X 'POST' \
 
   curl -X 'GET' 'http://127.0.0.1:8000/get-transcription/' -H 'accept: application/json'
 ```
+
+### Text to Speech (OpenAI)
+```
+pip install --upgrade openai
+pip install aiofiles
+```
