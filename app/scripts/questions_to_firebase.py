@@ -58,6 +58,11 @@ def get_questions():
                     row['incorrect_approach_1'],
                     row.get('incorrect_approach_2', ''),
                 ],
+                'same_topic_options': [
+                    row.get('same_topic_option_1', ''),
+                    row.get('same_topic_option_2', ''),
+                    row.get('same_topic_option_3', '')
+                ],
                 'time_limit': 60
             }
             questions_data.append(question_dict)

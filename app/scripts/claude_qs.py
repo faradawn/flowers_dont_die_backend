@@ -23,6 +23,9 @@ def ask_claude(leetcode_question_number):
 ##correct_approach:
 ##incorrect_approach_1: 
 ##Incorrect_approach_2:
+##same_topic_option_1:
+##same_topic_option_2:
+##same_topic_option_3:
     """
     prompt = f"""
     leetcode question number: {leetcode_question_number}
@@ -89,7 +92,10 @@ def parse_to_csv(text_response):
         data.get('question', ''),
         data.get('correct_approach', ''),
         data.get('incorrect_approach_1', ''),
-        data.get('Incorrect_approach_2', '')
+        data.get('Incorrect_approach_2', ''),
+        data.get('same_topic_option_1', ''),
+        data.get('same_topic_option_2', ''),
+        data.get('same_topic_option_3', '')
     ]
     
     # Append the row to the CSV file
@@ -101,7 +107,11 @@ def parse_to_csv(text_response):
         
         # Write header if the file doesn't exist
         if not file_exists:
-            writer.writerow(['question_number', 'topic', 'difficulty', 'question', 'correct_approach', 'incorrect_approach_1', 'incorrect_approach_2'])
+            writer.writerow([
+                'question_number', 'topic', 'difficulty', 'question',
+                'correct_approach', 'incorrect_approach_1', 'incorrect_approach_2',
+                'same_topic_option_1', 'same_topic_option_2', 'same_topic_option_3'
+            ])
         
         # Write the data row
         writer.writerow(row)
@@ -128,6 +138,9 @@ if __name__ == "__main__":
 ]
 
     for i, q in enumerate(question_arr):
-        print("doing", i)
+        print("Processing question", i)
         res = ask_claude(q)
-        parse_to_csv(res)
+        if res != -1:
+            parse_to_csv(res)
+        else:
+            print(f"Failed to process question {q}")
