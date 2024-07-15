@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 import anthropic
+import csv
 
 parent_dir = Path(__file__).parent.parent
 load_dotenv(parent_dir / '.env')
@@ -22,10 +23,7 @@ def ask_claude(leetcode_question_number):
 ##question:
 ##correct_approach:
 ##incorrect_approach_1: 
-##Incorrect_approach_2:
-##same_topic_option_1:
-##same_topic_option_2:
-##same_topic_option_3:
+##incorrect_approach_2:
     """
     prompt = f"""
     leetcode question number: {leetcode_question_number}
@@ -53,7 +51,6 @@ def ask_claude(leetcode_question_number):
         )
         
         response_content = message.content
-      
         
         # Extract text content from the response
         if isinstance(response_content, list):
@@ -66,10 +63,6 @@ def ask_claude(leetcode_question_number):
     except Exception as e:
         print(f"An error occurred in Claude API call: {str(e)}")
         return -1, "Error in processing the response"
-
-# parse the claude's output and append to a csv "claude_question_list.csv" with the following headers
-# question_number, topic, difficulty, question, correct_approach, incorrect_approach_1, incorrect_approach_2
-import csv
 
 def parse_to_csv(text_response):
     # Initialize a dictionary to store the parsed data
@@ -92,13 +85,13 @@ def parse_to_csv(text_response):
         data.get('question', ''),
         data.get('correct_approach', ''),
         data.get('incorrect_approach_1', ''),
-        data.get('Incorrect_approach_2', ''),
-        data.get('same_topic_option_1', ''),
-        data.get('same_topic_option_2', ''),
-        data.get('same_topic_option_3', '')
+        data.get('incorrect_approach_2', ''),
+        data.get('correct_approach', ''),  # Same topic option 1
+        data.get('incorrect_approach_1', ''),  # Same topic option 2
+        data.get('incorrect_approach_2', '')  # Same topic option 3
     ]
     
-    # Append the row to the CSV file
+    # Corrected path to the CSV file
     csv_file = 'app/scripts/claude_question_list.csv'
     file_exists = os.path.isfile(csv_file)
     
@@ -115,27 +108,24 @@ def parse_to_csv(text_response):
         
         # Write the data row
         writer.writerow(row)
-    
-
-
 
 if __name__ == "__main__":
     question_arr = [
-    "704: Binary Search. Topic: Binary Search. Difficulty: Easy",
-    "153: Find Minimum in Rotated Sorted Array. Topic: Binary Search. Difficulty: Medium",
-    "26: Remove Duplicates from Sorted Array. Topic: Two Pointers. Difficulty: Easy",
-    "15: 3Sum. Topic: Two Pointers. Difficulty: Medium",
-    "20: Valid Parentheses. Topic: Stack. Difficulty: Easy",
-    "155: Min Stack. Topic: Stack. Difficulty: Medium",
-    "104: Maximum Depth of Binary Tree. Topic: Binary Tree. Difficulty: Easy",
-    "94: Binary Tree Inorder Traversal. Topic: Binary Tree. Difficulty: Medium",
-    "102: Binary Tree Level Order Traversal. Topic: BFS. Difficulty: Easy",
-    "127: Word Ladder. Topic: BFS. Difficulty: Medium",
-    "112: Path Sum. Topic: DFS. Difficulty: Easy",
-    "200: Number of Islands. Topic: DFS. Difficulty: Medium",
-    "70: Climbing Stairs. Topic: Dynamic Programming. Difficulty: Easy",
-    "300: Longest Increasing Subsequence. Topic: Dynamic Programming. Difficulty: Medium"
-]
+        "704: Binary Search. Topic: Binary Search. Difficulty: Easy",
+        "153: Find Minimum in Rotated Sorted Array. Topic: Binary Search. Difficulty: Medium",
+        "26: Remove Duplicates from Sorted Array. Topic: Two Pointers. Difficulty: Easy",
+        "15: 3Sum. Topic: Two Pointers. Difficulty: Medium",
+        "20: Valid Parentheses. Topic: Stack. Difficulty: Easy",
+        "155: Min Stack. Topic: Stack. Difficulty: Medium",
+        "104: Maximum Depth of Binary Tree. Topic: Binary Tree. Difficulty: Easy",
+        "94: Binary Tree Inorder Traversal. Topic: Binary Tree. Difficulty: Medium",
+        "102: Binary Tree Level Order Traversal. Topic: BFS. Difficulty: Easy",
+        "127: Word Ladder. Topic: BFS. Difficulty: Medium",
+        "112: Path Sum. Topic: DFS. Difficulty: Easy",
+        "200: Number of Islands. Topic: DFS. Difficulty: Medium",
+        "70: Climbing Stairs. Topic: Dynamic Programming. Difficulty: Easy",
+        "300: Longest Increasing Subsequence. Topic: Dynamic Programming. Difficulty: Medium"
+    ]
 
     for i, q in enumerate(question_arr):
         print("Processing question", i)
