@@ -1,3 +1,5 @@
+# usage: python3 -m app.scripts.claude_qs
+
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -16,7 +18,10 @@ client = anthropic.Anthropic(api_key=api_key)
 
 def ask_claude(leetcode_question_number):
     system_prompt = """
-    You are a teacher creating multiple choice questions. I will provide you with a leetcode question number. You will describe the full question in less than 100 words. Produce 1 correct approach and 2 incorrect approaches. Limit each approach in 50 words. Don’t say why the incorrect approach is wrong. Output in the following format: 
+    You are a teacher creating multiple choice questions. I will provide you with a leetcode question number. You will describe the full question in less than 100 words. 
+    Produce 1 correct approach and 2 incorrect approaches. 
+    Then, create 2 other incorrect approaches that uses a similiar method as the correct approach to make the question harder. 
+    Limit each approach in 50 words. Don’t say why the incorrect approach is wrong. Output in the following format: 
 ##question_number:
 ##topic:
 ##difficulty:
@@ -24,6 +29,8 @@ def ask_claude(leetcode_question_number):
 ##correct_approach:
 ##incorrect_approach_1: 
 ##incorrect_approach_2:
+##incorrect_approach_3:
+##incorrect_approach_4:
     """
     prompt = f"""
     leetcode question number: {leetcode_question_number}
@@ -86,9 +93,8 @@ def parse_to_csv(text_response):
         data.get('correct_approach', ''),
         data.get('incorrect_approach_1', ''),
         data.get('incorrect_approach_2', ''),
-        data.get('correct_approach', ''),  # Same topic option 1
-        data.get('incorrect_approach_1', ''),  # Same topic option 2
-        data.get('incorrect_approach_2', '')  # Same topic option 3
+        data.get('incorrect_approach_3', ''),  # Same topic option 2
+        data.get('incorrect_approach_4', '')  # Same topic option 3
     ]
     
     # Corrected path to the CSV file
@@ -103,7 +109,7 @@ def parse_to_csv(text_response):
             writer.writerow([
                 'question_number', 'topic', 'difficulty', 'question',
                 'correct_approach', 'incorrect_approach_1', 'incorrect_approach_2',
-                'same_topic_option_1', 'same_topic_option_2', 'same_topic_option_3'
+                'incorrect_approach_3', 'same_topic_option_4'
             ])
         
         # Write the data row
@@ -134,3 +140,6 @@ if __name__ == "__main__":
             parse_to_csv(res)
         else:
             print(f"Failed to process question {q}")
+        
+        if i > 1:
+            break
