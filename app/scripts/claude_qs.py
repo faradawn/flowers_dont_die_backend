@@ -111,20 +111,12 @@ def parse_to_csv(text_response):
 
 if __name__ == "__main__":
     question_arr = [
-    "704: Binary Search. Topic: Binary Search. Difficulty: Easy",
-    "153: Find Minimum in Rotated Sorted Array. Topic: Binary Search. Difficulty: Medium",
-    "26: Remove Duplicates from Sorted Array. Topic: Two Pointers. Difficulty: Easy",
-    "15: 3Sum. Topic: Two Pointers. Difficulty: Medium",
-    "20: Valid Parentheses. Topic: Stack. Difficulty: Easy",
-    "155: Min Stack. Topic: Stack. Difficulty: Medium",
-    "104: Maximum Depth of Binary Tree. Topic: Binary Tree. Difficulty: Easy",
-    "94: Binary Tree Inorder Traversal. Topic: Binary Tree. Difficulty: Medium",
-    "102: Binary Tree Level Order Traversal. Topic: BFS. Difficulty: Easy",
-    "127: Word Ladder. Topic: BFS. Difficulty: Medium",
-    "112: Path Sum. Topic: DFS. Difficulty: Easy",
-    "200: Number of Islands. Topic: DFS. Difficulty: Medium",
-    "70: Climbing Stairs. Topic: Dynamic Programming. Difficulty: Easy",
-    "300: Longest Increasing Subsequence. Topic: Dynamic Programming. Difficulty: Medium"
+    "78. Subsets (Easy, Backtracking)",
+    "77. Combinations (Easy, Backtracking)",
+    "104. Maximum Depth of Binary Tree (Easy, Binary Tree)",
+    "144. Binary Tree Preorder Traversal (Easy, Binary Tree)",
+    "141. Linked List Cycle (Easy, Data Structures)",
+    "160. Intersection of Two Linked Lists (Easy, Data Structures)"
 ]
 
     for i, q in enumerate(question_arr):
