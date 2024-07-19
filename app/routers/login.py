@@ -33,21 +33,6 @@ async def create_user(user: User):
     uid = f"{user.username}_{uuid.uuid4()}"
     users_ref.document(uid).set(user.dict())
 
-    try:
-        for course in db.collection('courses').stream():
-            course_data = course.to_dict()
-            garden_data = {
-                'uid': uid,
-                'username': user.username,
-                'course_id': course.id,
-                'garden_rows': [
-                    {'row_num': str(i), 'topic': topic, 'questions_done': []}
-                    for i, topic in enumerate(course_data['course_topics'], start=1)
-                ]
-            }
-            gardens_ref.add(garden_data)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error setting up gardens: {str(e)}")
 
     return ResponseModel(status="success", message="User created successfully", uid=uid)
 

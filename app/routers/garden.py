@@ -26,26 +26,52 @@ class GardenLoadResponse(BaseModel):
 @router.post("/get_garden", response_model=GardenLoadResponse)
 async def get_garden(request: GardenLoadRequest):
     try:
-        # Query the gardens collection
+        # Fetch the garden for the user and course
         gardens_ref = db.collection('gardens')
         query = gardens_ref.where('uid', '==', request.uid).where('course_id', '==', request.course_id).limit(1).get()
 
         if not query:
+            # Fetch course data
+            course_ref = db.collection('courses').document(request.course_id)
+            course_doc = course_ref.get()
+            if not course_doc.exists:
+                return GardenLoadResponse(
+                    status="failed",
+                    message="Course not found",
+                    course_id=request.course_id,
+                    course_name="",
+                    garden_rows=[]
+                )
+
+            course_data = course_doc.to_dict()
+            course_name = course_data.get('course_name', '')
+
+            # Create a new garden
+            garden_data = {
+                'uid': request.uid,
+                'username': fetch_username(request.uid),
+                'course_id': request.course_id,
+                'garden_rows': [
+                    {'row_num': i, 'topic': topic, 'questions_done': []}
+                    for i, topic in enumerate(course_data.get('course_topics', []))
+                ]
+            }
+            gardens_ref.add(garden_data)
+
             return GardenLoadResponse(
-                status="failed",
-                message="Garden not found",
-                course_id="",
-                course_name="",
-                garden_rows=[]
+                status="success",
+                message="New garden created",
+                course_id=request.course_id,
+                course_name=course_name,
+                garden_rows=[GardenRow(**row) for row in garden_data['garden_rows']]
             )
 
         garden_doc = query[0]
         garden_data = garden_doc.to_dict()
 
         # Fetch course name
-        courses_ref = db.collection('courses')
-        course_doc = courses_ref.document(request.course_id).get()
-        
+        course_ref = db.collection('courses').document(request.course_id)
+        course_doc = course_ref.get()
         if not course_doc.exists:
             return GardenLoadResponse(
                 status="failed",
@@ -61,7 +87,7 @@ async def get_garden(request: GardenLoadRequest):
         # Prepare garden rows
         garden_rows = [
             GardenRow(
-                row_num=int(row['row_num']),
+                row_num=row['row_num'],
                 topic=row['topic'],
                 questions_done=row['questions_done']
             )

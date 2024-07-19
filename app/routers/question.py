@@ -66,7 +66,7 @@ async def get_question(request: GetQuestionRequest):
             # If no questions found for the course, return an error
             return GetQuestionResponse(
                 status="failed",
-                message="No questions found for this course",
+                message="No questions",
                 question_id="No Question",
                 difficulty="Easy",
                 topic="No question",
@@ -91,7 +91,7 @@ async def get_question(request: GetQuestionRequest):
         else:
             return GetQuestionResponse(
                 status="failed",
-                message="No questions found for this topic",
+                message="No questions",
                 question_id="More questions on this topic is on its way!",
                 difficulty="Easy",
                 topic="No question",
@@ -103,8 +103,8 @@ async def get_question(request: GetQuestionRequest):
                 audio_url=""
             )
 
-    audio_filename = f"audio_{question_data['question_id']}.mp3"
-    await generate_audio(question_data['question'], audio_filename)
+    audio_filename = f"audo_generation/audio_{question_data['question_id']}.mp3"
+    # await generate_audio(question_data['question'], audio_filename)
 
     return GetQuestionResponse(
         status="success",

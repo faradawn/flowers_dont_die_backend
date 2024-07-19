@@ -80,8 +80,8 @@ sudo firewall-cmd --reload
 
 - How to invoke a script
 ```
-# add the project root
-python -m app.scripts.firebase_delete_all_users
+# at the project root
+python -m app.scripts.firebase_delete_collection --collection gardens
 ```
 
 - How to use Claude API
