@@ -56,7 +56,9 @@ async def get_garden(request: GardenLoadRequest):
                     for i, topic in enumerate(course_data.get('course_topics', []))
                 ]
             }
-            gardens_ref.add(garden_data)
+            # Make garden doc id tobe username|course_id
+            doc_id = f"{garden_data['username']}|{request.course_id}"
+            gardens_ref.document(doc_id).set(garden_data)
 
             return GardenLoadResponse(
                 status="success",
