@@ -123,3 +123,22 @@ if __name__ == "__main__":
         print("doing", i)
         res = ask_claude(q)
         parse_to_csv(res)
+        
+def process_question(leetcode_question_number):
+    """
+    Processes a LeetCode question number by calling the Claude API and formatting the response.
+    
+    Args:
+    leetcode_question_number (str): The unique identifier for the LeetCode question.
+    
+    Returns:
+    str: Formatted response suitable for further processing or None if an error occurs.
+    """
+    # Fetch and process Claude's response
+    response = ask_claude(leetcode_question_number)
+    if response == -1:
+        print("Failed to process question due to API error.")
+        return None
+    
+    # Assuming response is correctly formatted for your use case
+    return response
