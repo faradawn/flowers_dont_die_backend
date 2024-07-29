@@ -1,4 +1,5 @@
 from app.firebase import db
+import requests
 
 def get_course_id():
     course_id = None
@@ -6,6 +7,19 @@ def get_course_id():
         course_id = course.id
         break
     return course_id
+
+def fetch_leetcode_date(slug):
+    base_url = "https://alfa-leetcode-api.onrender.com/select"
+    params = {"titleSlug": slug}
+
+    try:
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        data = response.json()
+        return data
+    except requests.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
 
 def upload_questions(course_id='Software_Engineering_1', file_name='app/scripts/claude_question_list.csv'):
     import csv
@@ -45,3 +59,7 @@ if __name__ == '__main__':
     course_id = get_course_id()
     print("Got course_id", course_id)
     upload_questions(course_id=course_id, file_name='app/scripts/claude_question_list.csv')
+
+# Usage
+# python3 -m app.scripts.firebase_delete_collection --collection questions
+# python3 -m app.scripts.firebase_create_questions

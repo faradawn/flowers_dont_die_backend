@@ -14,3 +14,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     delete_all(args.collection)
+
+# Usage: python3 -m app.scripts.firebase_delete_collection --collection questions
