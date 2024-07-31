@@ -13,19 +13,16 @@ if not api_key:
 
 client = anthropic.Anthropic(api_key=api_key)
 
-def ask_claude(leetcode_question_number):
+def ask_claude(question_slug, question_text):
     system_prompt = """
-    You are a teacher creating multiple choice questions. I will provide you with a leetcode question number. You will describe the full question in less than 100 words. Produce 1 correct approach and 2 incorrect approaches. Limit each approach in 50 words. Don’t say why the incorrect approach is wrong. Output in the following format: 
-##question_number:
-##topic:
-##difficulty:
-##question:
+You are an algorithm expert creating multiple choice questions for computer science students. I will provide a LeetCode question text and question slug. Your task is to produce 1 correct approach and 2 incorrect approaches, each limited to 50 words. Do not explain why the incorrect approaches are wrong. Output the responses in the following format. After each colon, don't add a new line.
 ##correct_approach:
 ##incorrect_approach_1: 
 ##Incorrect_approach_2:
     """
     prompt = f"""
-    leetcode question number: {leetcode_question_number}
+    question slug: {question_slug}
+    question text: {question_text}
     """
     
     print(f"Sending prompt to Claude API: {prompt}")
@@ -68,32 +65,36 @@ def ask_claude(leetcode_question_number):
 # question_number, topic, difficulty, question, correct_approach, incorrect_approach_1, incorrect_approach_2
 import csv
 
-def parse_to_csv(text_response):
+def parse_to_csv(claude_res, question_number, topic, difficulty, slug, question_text, csv_file='app/scripts/claude_question_list.csv'):
+    """
+    question_number,topic,difficulty,slug,question,correct_approach,incorrect_approach_1,incorrect_approach_2
+    """
     # Initialize a dictionary to store the parsed data
     data = {}
     
     # Split the response into lines
-    lines = text_response.strip().split('\n')
+    lines = claude_res.strip().split('\n')
     
     # Parse each line
     for line in lines:
         if line.startswith('##'):
+            print("Line", line)
             key, value = line[2:].split(':', 1)
             data[key.strip()] = value.strip()
-    
+
     # Prepare the row to be written to CSV
     row = [
-        data.get('question_number', ''),
-        data.get('topic', ''),
-        data.get('difficulty', ''),
-        data.get('question', ''),
+        question_number,
+        topic,
+        difficulty,
+        slug,
+        question_text,
         data.get('correct_approach', ''),
         data.get('incorrect_approach_1', ''),
         data.get('Incorrect_approach_2', '')
     ]
     
     # Append the row to the CSV file
-    csv_file = 'app/scripts/claude_question_list.csv'
     file_exists = os.path.isfile(csv_file)
     
     with open(csv_file, 'a', newline='', encoding='utf-8') as f:
@@ -101,12 +102,10 @@ def parse_to_csv(text_response):
         
         # Write header if the file doesn't exist
         if not file_exists:
-            writer.writerow(['question_number', 'topic', 'difficulty', 'question', 'correct_approach', 'incorrect_approach_1', 'incorrect_approach_2'])
+            writer.writerow(['question_number', 'topic', 'difficulty', 'slug', 'question', 'correct_approach', 'incorrect_approach_1', 'incorrect_approach_2'])
         
         # Write the data row
         writer.writerow(row)
-    
-
 
 
 if __name__ == "__main__":
