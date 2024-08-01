@@ -24,7 +24,7 @@ async def get_access_token():
 async def create_task(audio_file_name):
     url = "https://aip.baidubce.com/rpc/2.0/aasr/v1/create?access_token=" + await get_access_token()
     payload = {
-        "speech_url": f"http://129.114.24.200:8001/audio/{audio_file_name}",
+        "speech_url": f"https://backend.faradawn.site:8001/audio/{audio_file_name}",
         "format": "m4a",
         "pid": 1737,
         "rate": 16000

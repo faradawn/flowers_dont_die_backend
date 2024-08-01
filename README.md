@@ -33,7 +33,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8001
 curl http://127.0.0.1:8001
 
 # on local computer
-curl http://129.114.24.200:8001
+curl https://backend.faradawn.site:8001
 ```
 
 
@@ -41,7 +41,7 @@ curl http://129.114.24.200:8001
 ### Test API
 ```
 # Post 01
-curl -X POST "http://129.114.24.200:8001/courses" \
+curl -X POST "https://backend.faradawn.site:8001/courses" \
      -H "Content-Type: application/json" \
      -d '{"uid": "100"}'
 ```

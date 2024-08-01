@@ -1,17 +1,18 @@
 # Dcoumentation of Backend API
-- Check the full API documentation at: http://129.114.24.200:8001/docs.
+- Check the full API documentation at: https://backend.faradawn.site:8001
+- Server IP address (old url) http://129.114.24.200:8001
 
 ## Login Screen
 ```
-curl -X POST "http://129.114.24.200:8001/create_user" \
+curl -X POST "https://backend.faradawn.site:8001/create_user" \
      -H "Content-Type: application/json" \
      -d '{"username": "Fara", "password": "1234"}'
 
-curl -X POST "http://129.114.24.200:8001/login" \
+curl -X POST "https://backend.faradawn.site:8001/login" \
      -H "Content-Type: application/json" \
      -d '{"username": "Fara", "password": "1234"}'
 
-curl -X POST "http://129.114.24.200:8001/delete_account" \
+curl -X POST "https://backend.faradawn.site:8001/delete_account" \
      -H "Content-Type: application/json" \
      -d '{"uid": "xxx"}'
 ```
@@ -19,7 +20,11 @@ curl -X POST "http://129.114.24.200:8001/delete_account" \
 
 ## Course Screen
 ```
-curl -X POST "http://129.114.24.200:8001/courses" \
+curl -X POST "https://backend.faradawn.site:8001/courses" \
+     -H "Content-Type: application/json" \
+     -d '{"uid": 100}'
+
+curl -X POST "https://backend.faradawn.site:8001/courses" \
      -H "Content-Type: application/json" \
      -d '{"uid": 100}'
 ```
@@ -61,7 +66,7 @@ Response {
 }
 
 
-curl -X POST "http://129.114.24.200:8001/get_garden" \
+curl -X POST "https://backend.faradawn.site:8001/get_garden" \
      -H "Content-Type: application/json" \
      -d '{"uid": "Fara_fd7bc457-2ca9-47fd-8825-7bea04b0d313", "course_id": "Software_Engineer_53fc0699-7eb2-4e66-bdd9-e1fa51aa4c3c"}'
 ```
@@ -126,14 +131,14 @@ Response {
   status: 'success'
 }
 
-curl -X POST "http://129.114.24.200:8001/garden/submit_answer" \
+curl -X POST "https://backend.faradawn.site:8001/garden/submit_answer" \
      -H "Content-Type: application/json" \
      -d '{"uid": "100", "neighbor_uid": "Faradawn_2_a19480c7-d365-415b-a50d-bc71de51776c", "course_id": "101", "question_id": "SxGy1eypKa7Wq31BXuPd", "response_time": 10, "user_answer": "B", "correct_answer": "B"}'
 ```
 
 ### Submit text response 
 ```
-curl -X POST "http://129.114.24.200:8001/submit_text_response" \
+curl -X POST "https://backend.faradawn.site:8001/submit_text_response" \
      -H "Content-Type: application/json" \
      -d '{"uid": "100", 
      "question_id": "SxGy1eypKa7Wq31BXuPd", 
@@ -146,7 +151,7 @@ curl -X POST "http://129.114.24.200:8001/submit_text_response" \
 
 ### Submit audio response 
 ```
-curl -X POST "http://129.114.24.200:8001/submit_audio_response" \
+curl -X POST "https://backend.faradawn.site:8001/submit_audio_response" \
   -H "Content-Type: multipart/form-data" \
   -F "uid=user123" \
   -F "question_id=q001" \
@@ -192,7 +197,7 @@ Response [
   }
 ]
 
-curl -X POST "http://129.114.24.200:8001/select_neighbor" \
+curl -X POST "https://backend.faradawn.site:8001/select_neighbor" \
      -H "Content-Type: application/json" \
      -d '{"uid": 100, "course_id": 101}'
 ```
